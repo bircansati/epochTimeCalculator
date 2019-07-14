@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<head>
+    <title>Page Title</title>
+</head>
+
+<body>
+    <style>
+        DIV.container {
+            height: 10em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #78909c
+        }
+    </style>
+
+    <div class="container">
+        <table style="width:50%;">
+            <tr style="text-align: center">
+                <th>Current Unix Timestamp</th>
+                <th>Current Local Time</th>
+                <th>Current UTC Time</th>
+            </tr>
+            <tr>
+                <th id="currentUnix"></th>
+                <th id="currentLocal"></th>
+                <th id="currentUtc"></th>
+            </tr>
+        </table>
+    </div>
+    <div class="container" style="background-color: #a7c0cd">
+        <table ">
+            <tr style="text-align: center">
+                <th><input id="timestamp" type="text" placeholder="EnterTimestamp">
+                    <input type="submit" onclick="getHumanDate()" value="Timestamp to Human Date"><br></th>
+
+            </tr>
+            <tr style="text-align: center;font-family:georgia,garamond,serif;font-size:16px;font-style:italic;">
+                <th id="utc"></th>
+
+
+            </tr>
+            <tr style="text-align: center;font-family:georgia,garamond,serif;font-size:16px;font-style:italic;">
+                <th id="gmt"></th>
+            </tr>
+        </table>
+    </div>
+    <div class="container" style="background-color:#007ac1">
+        <table style="width: 80%;table-layout: fixed; ">
+            <tr>
+                <th class="w-50">Year</th>
+                <th>Month</th>
+                <th>Date</th>
+                <th>Hours</th>
+                <th>Minutes</th>
+                <th>Seconds</th>
+                <th>TimeZone</th>
+            </tr>
+            <tr>
+                <th><select  id="year" onchange="changeYear()"></select></th>
+                <th><select  id="month" onchange="changeMonth()"></select></th>
+                <th><select  id="date"></select></th>
+                <th><select  id="hours"></select></th>
+                <th><select  id="min"></select></th>
+                <th><select  id="sec"></select></th>
+                <th><select  id="tz">
+                        <option value="GMT">GMT</option>
+                        <option value="Local">Local</option>
+                    </select></th>
+                <th><input type="submit" onclick="selectedTimeToEpoch()" value="Convert"></th>
+            </tr>
+            <tr>
+                <th colspan="3" style="text-align: right;">
+                    <p style="margin-top: 7px">Converted epoch timestamp in seconds :</p>
+                </th>
+                <th colspan="3" style="padding-left: 5px">
+                    <input id="convertedTime" type="text" placeholder="">
+
+                </th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December","January"];
+        var monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        var monthLeapDays = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        var weekDays = ["Thursday", "Friday", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"];
+        var options = "";
+
+
+
+        /*---------Programin ilk bolumu--------*/
+        setInterval(function () {
+            /* -------------Local time bulan bolum-------------*/
+            var today = new Date();
+            var zaman=Math.floor(today.getTime()/1000);
+
+            let yearCurrent = today.getFullYear();
+            let monthCurrent = today.getMonth();
+            let dayCurrent = today.getDate();
+            let hourCurrent = today.getHours();
+            let minuteCurrent = today.getMinutes();
+            let secondCurrent = today.getSeconds();
+            let timeZoneCurrent = "";
+            if (hourCurrent >= 12) {
+                hourCurrent = hourCurrent - 12;                 /*24`luk saat dilimi 12lik saat dilimine cevirildi ve am ile pm belirlendi*/
+                timeZoneCurrent = "pm";
+            }
+            else {
+                timeZoneCurrent = "am";
+            }
+            if (dayCurrent < 10) {
+                dayCurrent = '0' + dayCurrent;
+            }
+            if (minuteCurrent < 10) {
+                minuteCurrent = '0' + minuteCurrent;
+            }
+            document.getElementById("currentLocal").innerHTML = monthNames[monthCurrent] + ' ' + dayCurrent + ',' + yearCurrent + " " + hourCurrent + ":" + minuteCurrent + ":" + secondCurrent + " " + timeZoneCurrent;
+
+
+                /*-------UTC Time bulan bolum---------*/
+            var yearCurrentUTC = today.getUTCFullYear();
+            var monthCurrentUTC= today.getUTCMonth();
+            var dayCurrentUTC = today.getUTCDate();
+            var hourCurrentUTC = today.getUTCHours();
+            var minuteCurrentUTC = today.getUTCMinutes();
+            var secondCurrentUTC = today.getUTCSeconds();
+            var timeZoneCurrentUTC = "";
+
+            if (hourCurrentUTC >= 12) {
+                hourCurrentUTC = hourCurrentUTC - 12;       /*24`luk saat dilimi 12lik saat dilimine cevirildi ve am ile pm belirlendi*/
+                timeZoneCurrentUTC = "pm";
+            }
+            else {
+                timeZoneCurrentUTC = "am"
+            }
+
+            if (dayCurrentUTC < 10) {
+                dayCurrentUTC = '0' + dayCurrentUTC;
+            }
+            if (minuteCurrent < 10) {
+                minuteCurrent = '0' + minuteCurrent;
+            }
+            document.getElementById("currentUtc").innerHTML = monthDays[monthCurrentUTC] + ' ' + dayCurrentUTC + ',' + yearCurrentUTC + " " + hourCurrentUTC + ":" + minuteCurrentUTC + ":" + secondCurrentUTC + " " + timeZoneCurrentUTC;
+
+
+                        /*-----------------Timestamp Bulan Bolum--------------------*/
+
+            var yearCurrentUTCForEpoch = today.getUTCFullYear();
+            var monthCurrentUTCForEpoch= today.getUTCMonth();
+            var dayCurrentUTCForEpoch = today.getUTCDate();
+            var hourCurrentUTCForEpoch = today.getUTCHours();
+            var minuteCurrentUTCForEpoch = today.getUTCMinutes();
+            var secondCurrentUTCForEpoch = today.getUTCSeconds();
+            var timeZoneCurrentUTCForEpoch = "";
+            document.getElementById("currentUnix").innerHTML =timeToEpochCalculator(yearCurrentUTCForEpoch,monthCurrentUTCForEpoch,dayCurrentUTCForEpoch,hourCurrentUTCForEpoch,minuteCurrentUTCForEpoch,secondCurrentUTCForEpoch);
+        }, 1000);
+
+        function timeToEpochCalculator(year,month,day,hour,minute,second) {
+            let epochTime=0;
+            let sumOfDays=0;
+            for (let i=1970;i<year;i++){
+                if(i%4==0) {                                                            /*Girilen tarihi epoch"a donusturen fonksiyon*/
+                    sumOfDays+=366;
+                }
+                else
+                    sumOfDays+=365;
+            }
+            for (let i = 0; i < month; i++) {
+                sumOfDays += monthDays[i];
+            }
+            sumOfDays+=day-1;
+            epochTime+=sumOfDays*86400;
+            epochTime+= (hour) * 3600;
+            epochTime+= (minute) * 60;
+            epochTime+=second;
+            return epochTime;
+        }
+        function getHumanDate() {
+            var txtBoxTimeStamp = parseInt(document.getElementById("timestamp").value);
+            var timestamp2 = txtBoxTimeStamp + (3600 * 3);
+            var localTime = epochToHumanDate(txtBoxTimeStamp + (3600 * 3));                           /*Projenin 2. kismi icin butona basildiginda calisan fonksiyon*/
+            var UtcTime = epochToHumanDate(txtBoxTimeStamp);
+            document.getElementById("utc").innerHTML = " GMT = " + UtcTime;
+            document.getElementById("gmt").innerHTML = "Local = " + localTime + " (GMT+03:00)"
+
+        }
+                    /*------Verilen Epoch Degerini GMT"ye donusturen fonksiyon--------*/
+        function epochToHumanDate(timestamp) {
+                    /*Hesaplanan tarihin gununu buluyor*/
+            var weekday = Math.floor(timestamp / 86400);
+            weekday = weekday % 7;
+                    /*Girilen epoch time degerinin gun olarak degerini buluyor*/
+            var temp = timestamp % 86400;
+            var days = (timestamp - temp) / 86400;
+                    /*Girilen epoch time degerinin gunler ciktiktan sonra saat,dakika ve saniyesini hesapliyor*/
+            timestamp = temp % 3600;
+            var hours = (temp - timestamp) / 3600;
+            temp = timestamp % 60;
+            var min = (timestamp - temp) / 60;
+            var sec = temp;
+
+                        /*Artik olan gunlerle birlikte yil sayisini buluyor*/
+            var year = 1970;
+            while (true) {
+                if(days>366) {
+                    if (year % 4 == 0) {
+                        days -= 366;
+                        year++
+
+                    }
+                    else {
+                        days -= 365;
+                        year++
+                    }
+                    }
+
+                else if(days==366){
+
+                    if (year % 4 == 0) {
+                        days -= 366;
+                        year++;
+                        break;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                else if (days==365){
+                    if (year % 4 == 0) {
+                        break;
+                    }
+                    else{
+                        days -= 365;
+                        year++
+                        break;
+                    }
+                }
+                else{
+                    break;
+                }
+
+            }
+                /*Yil sayisini bulduktan sonra ay ve gun sayisini buluyor*/
+            var month = 0;
+            while (true) {
+            if (year % 4 == 0) {
+                    //[31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+                    if(days==31) {
+                        if(month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11){
+                            days-=31;
+                            month++;
+                            break;
+                        }
+                        else if(month==1){
+                            days-=29;
+                            month++;
+                            break;
+                        }
+                        else if(month==3||month==5||month==8||month==10){
+                            days-=30;
+                            month++;
+                            break;
+                        }
+                    }
+                    else if(days==30)
+                    {
+                        if(month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11){
+                            break;
+                        }
+                        else if(month==1){
+                            days-=29;
+                            month++;
+                            break;
+                        }
+                        else if(month==3||month==5||month==8||month==10){
+                            days-=30;
+                            month++;
+                            break;
+                        }
+                    }
+                    else if(days==29)
+                    {
+                        if(month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11){
+                            break;
+                        }
+                        else if(month==1){
+                            days-=29;
+                            month++
+                            break;
+                        }
+                        else if(month==3||month==5||month==8||month==10){
+                            break;
+                        }
+                    }
+                    else if(days>31){
+                        days -= monthLeapDaysDays[month];
+                        month++
+
+                    }
+                    else if(days<29){
+                        break;
+                    }
+
+                }
+
+            else {
+
+                    if(days == 31)
+                    {
+                        if (month == 0 || month == 2 || month == 4 || month == 6 || month == 7 || month == 9 || month == 11) {
+                            days -= 31;
+                            month++
+                            break;
+                        } else if (month == 1) {
+                            days -= 28;
+                            month++
+                            break;
+                        } else if (month == 3 || month == 5 || month == 8 || month == 10) {
+                            days -= 30;
+                            month++;
+                            break;
+                        }
+                    }
+                     else if(days==30)
+                    {
+                        if(month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11){
+                            break;
+                        }
+                        else if(month==1){
+                            days-=28;
+                            month++
+                            break;
+                        }
+                        else if(month==3||month==5||month==8||month==10){
+                            days-=30;
+                            month++;
+                            break;
+                        }
+                    }
+                    else if(days==28)
+                    {
+                        if(month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11){
+                            break;
+                        }
+                        else if(month==1){
+                            days-=28;
+                            month++
+                            break;
+                        }
+                        else if(month==3||month==5||month==8||month==10){
+                            break;
+                        }
+                    }
+                    else if(days>31){
+                        days -= monthDays[month];
+                        month++
+
+                    }
+                    else if(days==29){
+                        if(month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11){
+                            break;
+                        }
+                        else if(month==1){
+                            days-=28;
+                            month++
+                            break;
+                        }
+                        else if(month==3||month==5||month==8||month==10){
+                            break;
+                        }
+                    }
+                    else if(days<28){
+                        break;
+                    }
+
+                }
+            }
+            var time;
+            if (hours < 12) {
+                var time = "am"
+            }
+            else {
+                time = "pm";
+                hours = hours - 12
+
+            }
+            if (hours < 10)
+                hours = "0" + hours;
+            if (min < 10)
+                min = "0" + min;
+            if (sec < 10)
+                sec = "0" + sec;
+
+            return weekDays[weekday] + "," + monthNames[month] + " " + (days + 1) + "," + (year) + " " + hours + ":" + min + ":" + sec + " " + time
+
+        }
+        function showSelected(selectedElement) {
+            let selector =document.getElementById(selectedElement);               /*Selection kismindan degerleri almak icin kullaninal fonksiyon*/
+            return selector[selector.selectedIndex].value;
+        }
+        function selectedTimeToEpoch() {
+
+            let year = showSelected("year");
+            let month = document.getElementById("month").selectedIndex;
+            let day = showSelected("date");
+            let hour = showSelected("hours");
+            let minute = showSelected("min");                                       /*Programin ucuncu kisminda convert butonuna basildiginda calisan fonksiyon*/
+            let second = showSelected("sec");
+            let tz = showSelected("tz");
+            if (tz === "GMT") {
+                document.getElementById("convertedTime").value =timeToEpochCalculator(Number(year), Number(month), Number(day), Number(hour), Number(minute), Number(second));
+            } else{
+
+                document.getElementById("convertedTime").value =10800+timeToEpochCalculator(Number(year), Number(month), Number(day), Number(hour), Number(minute), Number(second));
+            }
+
+        }
+            /*-----Selection kismindaki degerlerin dongu ile yaratilmasi icin kullanildi*/
+
+            for (let year = 1971; year <= 2023; year++) {
+                options += "<option>" + year + "</option>";
+            }
+            document.getElementById("year").innerHTML = options;
+
+            var options = "";
+            for (let month = 0; month < 12; month++) {
+                options += "<option>" + monthNames[month] + "</option>";
+            }
+            document.getElementById("month").innerHTML = options;
+            var options = "";
+            for (var date = 1; date <= 31; date++) {
+                options += "<option>" + date + "</option>";
+            }
+            document.getElementById("date").innerHTML = options;
+            var yearOnChange=monthDays.slice();
+            function changeYear(){
+                if(Number(showSelected("year"))%4==0){
+                     yearOnChange=monthLeapDays.slice();
+                }
+                else
+                    yearOnChange=monthDays.slice();
+                document.getElementById("month").selectedIndex=0;
+                changeMonth();
+            }
+            function changeMonth(){
+                let selected=document.getElementById("month").selectedIndex;
+                let options = "";
+                for (var date = 1; date <= yearOnChange[selected]; date++) {
+                    options += "<option>" + date + "</option>";
+                }
+                document.getElementById("date").innerHTML = options;
+
+            }
+            var options = "";
+            for (var hours = 0; hours <= 11; hours++) {
+                options += "<option>" + hours + "</option>";
+            }
+            document.getElementById("hours").innerHTML = options;
+
+            var options = "";
+            for (var min = 0; min <= 59; min++) {
+                options += "<option>" + min + "</option>";
+            }
+            document.getElementById("min").innerHTML = options;
+
+            var options = "";
+            for (var sec = 0; sec <= 59; sec++) {
+                options += "<option>" + sec + "</option>";
+            }
+            document.getElementById("sec").innerHTML = options;
+
+
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+
+</body>
+
+</html>
